@@ -17,7 +17,11 @@
  * TESSERA_UPDATE=1 rewrites the baseline: only after an intended change of what the generators play. */
 #define TESSERA_NOTE_HOOK tt_note
 #define main hostsim_main
+#ifdef OC_ENGINE
+#include "oc_hostsim.c"         /* the o_C port's engine (tests/oc_hostsim.c): the same scenarios, no audio */
+#else
 #include "hostsim.c"
+#endif
 #undef main
 
 /* ------------------------------------------------------------------ the log --- */
@@ -3566,7 +3570,8 @@ int main(int argc, char **argv)
         bad += check("SUB: RATCH x1..x8 in equal parts of the step, CHANCE tossed on the SEED, NOTE LENGTH's held notes "
                      "once, Grids' parts repeated, STEP tracks' per-step RATCH and NUDGE, SHAPE; STOP releases", ok);
     }
-    {   /* the pitch accumulator (step_acc.c) */
+#ifndef OC_ENGINE
+    {   /* the pitch accumulator (step_acc.c): it reads the voices, so it needs a synth: the o_C port has none */
         unsigned ok = 0;
         pid_t pid;
         int fd[2];
@@ -3587,6 +3592,7 @@ int main(int argc, char **argv)
         bad += check("ACCUMULATE: a STEP track's notes climb in the scale each pass, WRAP / PING / CLAMP at LIMIT, "
                      "semitones with QNT OFF, from the notes as written after PLAY; TIEs and 0 as written", ok);
     }
+#endif
     {   /* BREATH (CHORD) */
         unsigned ok = 0;
         pid_t pid;
@@ -3608,7 +3614,8 @@ int main(int argc, char **argv)
         bad += check("BREATH: the drone tied over, its voices breathing on their own slow cycles; 0 strikes it as before; "
                      "the same with the same SEED; STOP releases", ok);
     }
-    {   /* ENERGY (energy.c) */
+#ifndef OC_ENGINE
+    {   /* ENERGY (energy.c): the drone's voices, so it needs a synth: the o_C port has none */
         unsigned ok = 0;
         pid_t pid;
         int fd[2];
@@ -3629,6 +3636,7 @@ int main(int argc, char **argv)
         bad += check("ENERGY: ARC's tide swings as far as it says over 3-6 min, RESTS of 8-18 s every few minutes; a rest "
                      "leaves out the generators' hits and keeps CHORD's drone; 0 none", ok);
     }
+#endif
     {   /* SLOTH, OCHD */
         unsigned fail = ~0u;
         pid_t pid;

@@ -77,6 +77,8 @@
 #include "engines.c"             /* dsp.c, the eng_*.c files, the factory patterns */
 #include "params.c"
 #include "mod.c"               /* the modulation matrix, used by voice.c and mix.c */
+#include "seqtime.c"           /* the time base: a beat, a division (voice.c, seq.c, mix.c) */
+#include "seq_lfo.c"           /* the track's LFO and the part's voice mode (voice.c, seq.c, chord.c) */
 #include "voice.c"
 #include "mix.c"
 

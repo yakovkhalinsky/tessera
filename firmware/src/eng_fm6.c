@@ -42,7 +42,6 @@ typedef struct {
 #include "eng_fm6_rom.h"         /* FM6_ROM[FM6_NROM]: F9.. */
 #include "eng_fm6_zen.h"         /* FM6_ZEN[FM6_NZEN]: ZEN-1's and FuMi-1's, the presets after INIT VOICE */
 
-#define ENGI_FM6 12u             /* engines.c ENGINES[] (append-only) */
 #define FM6_NFAC (FM6_NFACTORY + FM6_NROM)        /* F1..F24: the factory patches */
 #define FM6_PACKED 128u
 #define FM6_ON_ALL 0x3Fu
