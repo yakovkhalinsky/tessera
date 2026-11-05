@@ -7,17 +7,12 @@
  * KIT SID (drum_sid.c): one Commodore 6581 for the part, on one voice; its drums are C64 frame programs,
  * DIGI ON plays KICK and SNARE on the volume register, TONE and RES are its filter's. */
 /* Lane and GM roles shared by the grid and the synthesized 808. */
-enum { DV_KICK, DV_SNARE, DV_CLAP, DV_HATC, DV_HATO, DV_TOM, DV_RIM, DV_BELL, DV_NLANE };
-enum { DVT_PUNCH, DVT_ROUND, DVT_SNARE, DVT_CLAP, DVT_HATC, DVT_HATO, DVT_TOM, DVT_CONGA,
-       DVT_RIM, DVT_CLAVE, DVT_BELL, DVT_CYM, DVT_COUNT };
+#include "eng_drum.h"
 #include "x0x/fastmath.h"
 #include "drum_808.c"
 #include "x0x/drum909.c"
 
 enum { DK_808 = 4, DK_909 = 5, DK_SID = 6 }; /* Retain the stored value of existing 808 patches. */
-static const uint8_t DV_TYPE_LANE[DVT_COUNT] = {
-    DV_KICK, DV_KICK, DV_SNARE, DV_CLAP, DV_HATC, DV_HATO, DV_TOM, DV_TOM, DV_RIM, DV_RIM, DV_BELL, DV_BELL,
-};
 
 typedef struct {
     dr8_t r;
@@ -136,18 +131,6 @@ static void drum_block(track_t *t)
 static const char *const N_DRUM_KIT[] = {"808", "808", "808", "808", "808", "909", "SID"};
 static const char *const N_DRUM_KICK[] = {"PUNCH", "ROUND"};
 
-/* General MIDI notes 35..81 -> the drum (DVT_*; DVT_PUNCH: the kick KICK picks) and semitones from its
- * designed pitch */
-static const int8_t DRUM_GM[47][2] = {
-    {DVT_PUNCH, -2}, {DVT_PUNCH, 0}, {DVT_RIM, 0}, {DVT_SNARE, 0}, {DVT_CLAP, 0}, {DVT_SNARE, 2},     /* 35 */
-    {DVT_TOM, -7}, {DVT_HATC, 0}, {DVT_TOM, -4}, {DVT_HATC, -2}, {DVT_TOM, 0}, {DVT_HATO, 0},         /* 41 */
-    {DVT_TOM, 3}, {DVT_TOM, 5}, {DVT_CYM, 0}, {DVT_TOM, 8}, {DVT_CYM, -3}, {DVT_CYM, 2},              /* 47 */
-    {DVT_BELL, 5}, {DVT_HATC, 5}, {DVT_CYM, 4}, {DVT_BELL, 0}, {DVT_CYM, 1}, {DVT_CLAVE, -12},        /* 53 */
-    {DVT_CYM, -2}, {DVT_CONGA, 5}, {DVT_CONGA, 2}, {DVT_CONGA, 0}, {DVT_CONGA, 0}, {DVT_CONGA, -5},   /* 59 */
-    {DVT_TOM, 10}, {DVT_TOM, 7}, {DVT_BELL, 7}, {DVT_BELL, 3}, {DVT_HATC, 3}, {DVT_HATC, 7},          /* 65 */
-    {DVT_CLAVE, 7}, {DVT_CLAVE, 5}, {DVT_HATC, -4}, {DVT_HATC, -6}, {DVT_CLAVE, 0}, {DVT_CLAVE, -4},  /* 71 */
-    {DVT_CLAVE, -7}, {DVT_CONGA, 7}, {DVT_CONGA, 3}, {DVT_BELL, 12}, {DVT_BELL, 12},                  /* 77 */
-};
 /* the drum of a note (DVT_*) and its semitones; KICK picks the kick, the 808 selects its instrument from the GM note */
 static uint32_t drum_gm(const int16_t *p, uint32_t note, int32_t *st)
 {
@@ -164,15 +147,8 @@ static uint32_t drum_gm(const int16_t *p, uint32_t note, int32_t *st)
 /* ----------------------------------------------------- the grid's lanes --- */
 /* A step's lane hits (step_t.hit / acc, the DRUM grid: SEQ > STEP on a DRUM track) play these GM notes, on any
  * engine: DRUM strikes its lanes, a synth the pitches. Each is the designed pitch of
- * its lane (st 0 in DRUM_GM) */
-static const uint8_t DRUM_LANE_NOTE[NLANE] = {36, 38, 39, 42, 46, 45, 37, 56};
-
-/* the lane a GM note strikes */
-static uint32_t drum_lane(uint32_t note)
-{
-    uint32_t n = note >= 35u && note <= 81u ? note : 36u + (note + 120u - 36u) % 12u;
-    return DV_TYPE_LANE[DRUM_GM[n - 35u][0]];
-}
+ * its lane (st 0 in DRUM_GM): eng_drum.h has the table, so the sequencer and the
+ * generators can name a lane's note without the engine. */
 
 /* the lane's name as the track's KIT plays it (5 characters at most) */
 static const char *drum_lane_name(const track_t *t, uint32_t l)

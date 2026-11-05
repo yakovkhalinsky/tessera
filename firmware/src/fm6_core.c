@@ -19,23 +19,7 @@
  * index). The patch is the 155-byte single-voice layout (FP_* below), operator 0 = the sixth operator. */
 
 #include "x0x/fastmath.h"
-
-/* the 155-byte patch: 6 x 21 operator bytes (the sixth operator first), then the voice */
-enum {
-    FP_R1 = 0, FP_L1 = 4, FP_BP = 8, FP_LD, FP_RD, FP_LC, FP_RC, FP_RS, FP_AMS, FP_KVS, FP_OL, FP_MODE, FP_FC, FP_FF,
-    FP_DET, FP_OP = 21,
-    FP_PR1 = 126, FP_PL1 = 130, FP_ALG = 134, FP_FB, FP_OKS, FP_LFS, FP_LFD, FP_LPMD, FP_LAMD, FP_LKS, FP_LFW,
-    FP_LPMS, FP_TRNSP, FP_NAME, FP_SIZE = 155
-};
-
-/* the FM6 function settings (a DX7's function mode; each track its own, as each Dexed instance has, saved with the
- * project and the template; project.c):
- * pitch bend range up / down and step (0 = smooth), portamento (PEDAL: while CC 65 is down, ON) and its time
- * (CC 5 sets it) and glissando, then wheel, foot, breath and aftertouch: range and target (bit 0 pitch, 1
- * amplitude, 2 EG bias), Dexed's velocity scaling to the DX7's range, and ENGINE */
-enum { FN_PBUP, FN_PBDN, FN_PBSTEP, FN_PMODE, FN_PTIME, FN_GLISS, FN_MWR, FN_MWA, FN_FCR, FN_FCA, FN_BCR, FN_BCA,
-       FN_ATR, FN_ATA, FN_VNORM, FN_ENGINE, FM6_NFN };
-enum { FM6_MODERN, FM6_MARK1, FM6_OPL };
+#include "fm6_core.h"        /* the patch layout and the function settings (the parameter registry names them) */
 static const uint8_t FM6_FNMAX[FM6_NFN] = {12, 12, 12, 1, 127, 1, 99, 7, 99, 7, 99, 7, 99, 7, 1, 2};
 static const uint8_t FM6_FNDEF[FM6_NFN] = {3, 3, 0, 0, 0, 0, 99, 1, 0, 0, 0, 0, 0, 0, 0, FM6_MARK1};   /* Dexed's */
 static uint8_t fm6_fn[NTRK][FM6_NFN];                    /* per track (fm6_fn_reset at power-on, a new project) */
@@ -138,10 +122,6 @@ static inline __attribute__((always_inline)) int32_t fm6_freq(int32_t lf)
     int32_t y=fm6_freq_point(i)+(int32_t)((delta*(f>>7)+((delta*(f&127u))>>7))>>7);
     int32_t sh=20-(lf>>24);
     return sh<=0?y:sh>31?0:y>>sh;
-}
-static inline __attribute__((always_inline)) uint32_t fm6_pow2(int32_t x)
-{
-    return (uint32_t)fm_minf(fm_exp2f((float)x * (1.0f / 65536.0f)) * 65536.0f, 4294967040.0f);
 }
 static int32_t fm6_f32(int32_t x) { return (int32_t)(float)x; }
 static inline __attribute__((always_inline)) uint32_t fm6_ams_pt(uint32_t sa)
