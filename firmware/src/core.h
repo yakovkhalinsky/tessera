@@ -115,13 +115,7 @@ enum {
     F_OFS, F_FMNOTE, F_FMFRQ    /* FM6's pages: 0 at the middle of the range, the DX7 break point, an operator's frequency */
 };
 
-typedef struct {
-    const char *label;
-    uint8_t fmt;
-    int16_t min, max, def;
-    const char *const *names;   /* F_ENUM */
-    const char *unit;           /* F_INT / F_ENUM optional unit */
-} param_desc_t;
+#include "param_desc.h"
 
 enum {                          /* per-track parameters */
     P_LEVEL,
